@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S4: NEURAL LINK</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%2300f0ff'/></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --surface: #0a0a0a;
+            --surface-2: #141414;
+            --border: #222;
+            --primary: #00f0ff;
+            --secondary: #7000ff;
+            --success: #00ff9d;
+            --text: #e0e0e0;
+            --text-dim: #666;
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-sans: 'Space Grotesk', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background-color: var(--bg);
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            color: var(--text);
+            font-family: var(--font-sans);
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding: 2rem;
+        }
+
+        /* Ambient Glow */
+        .ambient-glow {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at 50% 0%, rgba(112, 0, 255, 0.15), transparent 60%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Container */
+        .main-layout {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+
+        /* Sidebar / HUD */
+        .hud {
+            position: sticky;
+            top: 2rem;
+            height: calc(100vh - 4rem);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .hud-card {
+            background: rgba(10, 10, 10, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hud-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 2px; height: 100%;
+            background: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+            opacity: 0.5;
+        }
+
+        .brand {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: -0.05em;
+            color: #fff;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .brand span { color: var(--primary); }
+
+        .system-status {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+        .stat-val { color: #fff; font-weight: 600; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
+        .stat-val.cyan { color: var(--primary); text-shadow: 0 0 10px rgba(0, 240, 255, 0.4); }
+        .stat-val.green { color: var(--success); text-shadow: 0 0 10px rgba(0, 255, 157, 0.4); }
+
+        .big-progress {
+            position: relative;
+            height: 4px;
+            background: #222;
+            border-radius: 2px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+        .big-progress-bar {
+            position: absolute;
+            height: 100%;
+            background: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+            width: 0%;
+            transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* Countdown */
+        .countdown-display {
+            font-family: var(--font-mono);
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1;
+            letter-spacing: -0.05em;
+        }
+        .countdown-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--text-dim);
+            margin-bottom: 5px;
+        }
+
+        /* Focus Mode */
+        .focus-hud {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        .timer-digi {
+            font-family: var(--font-mono);
+            font-size: 2rem;
+            color: var(--text-dim);
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .timer-digi.active {
+            color: var(--primary);
+            text-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+        }
+        .focus-controls {
+            display: flex;
+            gap: 10px;
+        }
+        .cyber-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 8px 16px;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        .cyber-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 0 8px rgba(0, 240, 255, 0.2);
+        }
+        .cyber-btn.active {
+            background: rgba(0, 240, 255, 0.1);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Content Grid */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            align-content: start;
+        }
+
+        .subject-module {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s;
+            position: relative;
+        }
+        .subject-module:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255,255,255,0.2);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+
+        .module-header {
+            padding: 1.25rem;
+            background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .module-info h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+        .module-info .code {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--primary);
+            background: rgba(0, 240, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .progress-dial {
+            width: 40px;
+            height: 40px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .progress-dial svg { transform: rotate(-90deg); }
+        .progress-dial circle { fill: none; stroke-width: 3; }
+        .progress-dial .bg { stroke: #222; }
+        .progress-dial .fg { stroke: var(--primary); transition: stroke-dashoffset 0.5s; stroke-linecap: round; }
+        .progress-text { font-family: var(--font-mono); font-size: 0.65rem; color: #fff; position: absolute; }
+
+        .module-body {
+            padding: 0;
+        }
+
+        .unit-group {
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .unit-group:last-child { border-bottom: none; }
+        
+        .unit-header {
+            padding: 10px 1.25rem;
+            font-size: 0.8rem;
+            color: #888;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            transition: color 0.2s;
+        }
+        .unit-header:hover { color: #fff; background: rgba(255,255,255,0.02); }
+        .unit-header span:last-child { font-family: var(--font-mono); opacity: 0.5; }
+
+        .topic-list {
+            display: none;
+            background: rgba(0,0,0,0.2);
+            padding: 5px 0;
+        }
+        .unit-group.expanded .topic-list { display: block; }
+        .unit-group.expanded .unit-header { color: var(--primary); }
+
+        .topic-item {
+            padding: 8px 1.25rem 8px 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+            position: relative;
+        }
+        .topic-item:hover { background: rgba(255,255,255,0.03); }
+        .topic-item::before {
+            content: '';
+            position: absolute;
+            left: 1.25rem;
+            top: 0; bottom: 0; margin: auto;
+            width: 1px; height: 100%;
+            background: #222;
+        }
+
+        /* Cyber Checkbox */
+        .cyber-check {
+            width: 16px;
+            height: 16px;
+            border: 1px solid #444;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 2;
+        }
+        .topic-item:hover .cyber-check { border-color: #666; }
+        .topic-item.done .cyber-check {
+            border-color: var(--success);
+            background: rgba(0, 255, 157, 0.1);
+            box-shadow: 0 0 8px rgba(0, 255, 157, 0.3);
+        }
+        .cyber-check::after {
+            content: '';
+            width: 8px; height: 8px;
+            background: var(--success);
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .topic-item.done .cyber-check::after {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .topic-name {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            transition: color 0.2s;
+            flex: 1;
+        }
+        .topic-item.done .topic-name { color: #555; text-decoration: line-through; }
+        .topic-item:hover .topic-name { color: var(--text); }
+        
+        .critical-badge {
+            width: 6px; height: 6px;
+            background: #ff0055;
+            border-radius: 50%;
+            box-shadow: 0 0 6px #ff0055;
+        }
+
+        .focus-trigger {
+            opacity: 0;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 2px 6px;
+            background: rgba(0, 240, 255, 0.05);
+            transition: all 0.2s;
+        }
+        .topic-item:hover .focus-trigger { opacity: 1; }
+        .focus-trigger:hover { background: var(--primary); color: #000; }
+
+        @media (max-width: 900px) {
+            .main-layout { grid-template-columns: 1fr; }
+            .hud { height: auto; position: relative; top: 0; margin-bottom: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-glow"></div>
+
+    <div class="main-layout">
+        <!-- Persistent HUD -->
+        <div class="hud">
+            <div class="hud-card">
+                <div class="brand"><span>//</span> SEM 4.0</div>
+                <div class="system-status">
+                    <div class="stat-row">
+                        <span>SYS.INTEGRITY</span>
+                        <span class="stat-val cyan" id="total-pct">0%</span>
+                    </div>
+                    <div class="big-progress">
+                        <div class="big-progress-bar" id="main-bar"></div>
+                    </div>
+                    <div class="stat-row" style="margin-top: 10px;">
+                        <span>COMPLETED_NODES</span>
+                        <span class="stat-val" id="done-count">0/0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>CRITICAL_ERRORS</span>
+                        <span class="stat-val" style="color:#ff0055" id="critical-left">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>UPTIME_STREAK</span>
+                        <span class="stat-val green" id="streak">0 DAYS</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hud-card">
+                <div class="countdown-label">TIME_TO_TARGET</div>
+                <div class="countdown-display" id="days-left">00</div>
+                <div class="stat-row" style="margin-top: 5px; opacity: 0.5;">DAYS UNTIL MID-EXAMS</div>
+            </div>
+
+            <div class="hud-card focus-hud">
+                <div class="countdown-label">ACTIVE_SESSION</div>
+                <div class="timer-digi" id="timer">00:00:00</div>
+                <div class="stat-row" id="focus-target" style="width: 100%; border-top: 1px solid #333; padding-top: 10px; margin-top: 5px;">
+                    IDLE
+                </div>
+                <div class="focus-controls" style="margin-top: 10px; width: 100%;">
+                    <button class="cyber-btn" onclick="toggleTimer()" id="timer-btn">INIT</button>
+                    <button class="cyber-btn" onclick="resetTimer()">RST</button>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top: auto;">
+                <button class="cyber-btn" onclick="exportData()" style="flex:1;">BACKUP</button>
+                <button class="cyber-btn" onclick="importData()" style="flex:1;">RESTORE</button>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid-container" id="grid"></div>
+    </div>
+
+    <script>
+        const SUBJECTS = {
+            MCN: { name: 'Mobile Computing', color: '#00f0ff', units: [
+                {n:'Networking Essentials',t:['Network Models','Client-Server','Layered Mech','OSI Model','TCP/IP','Data Traffic','Congestion','Congestion Ctrl']},
+                {n:'Protocol & Addr',t:['ARP/RARP','Routing Types','Email Protocols','WWW & HTTP','Link Protocols','IPv4 Subnet','IPv6']},
+                {n:'Mobile Comp',t:['Evolution','Mobile Arch','Wireless Ad-hoc','Middleware','Apps & Services','Security']},
+                {n:'Network Layer',t:['Mobile IP','Packet Delivery','Registration','DHCP','TCP Variants','TCP over 3G']},
+                {n:'Trends',t:['WLAN Arch','WPAN/Bluetooth','4G/5G/6G']}
+            ]},
+            CDF: { name: 'Cyber Security', color: '#ff0055', units: [
+                {n:'Fundamentals',t:['CIA Triad','AAA','Vulns & Threats','Proxy Types','7 Layers']},
+                {n:'Network Sec',t:['Malware','Sys Vulns','OSI Attacks','OT Attacks','IoT Attacks']},
+                {n:'Cyber Crime',t:['Classification','Org Crimes','Indiv Crimes','Prop Crimes','Dark Web']},
+                {n:'Ethical Hacking',t:['Hacking Phases','Kali Linux','OSINT','EXIF Analysis','Nmap Scanning']},
+                {n:'Forensics',t:['Principles','Evidence Handling','Autopsy/Sleuth','CVE/MITRE','Case Studies']}
+            ]},
+            FML: { name: 'Machine Learning', color: '#00ff9d', units: [
+                {n:'Intro',t:['Human vs ML','Types of ML','Applications','Tools']},
+                {n:'Data Prep',t:['Pipeline','Data Types','Quality','Feature Selection']},
+                {n:'Modeling',t:['Model Selection','Training types','Confusion Matrix','Improvement']},
+                {n:'Supervised',t:['Classif vs Reg','KNN','SVM','Linear Reg','Log Reg']},
+                {n:'Unsupervised',t:['Clustering','K-Means','Assoc Rules','Apriori']},
+                {n:'Python',t:['Pandas','NumPy','Matplotlib','Scikit-learn']}
+            ]},
+            MAD: { name: 'Android Dev', color: '#ffcc00', units: [
+                {n:'Intro',t:['Mobile OS','Android vs iOS','Android Studio','Emulator']},
+                {n:'Arch',t:['Layers','Activity Lifecycle','Service Lifecycle','Broadcast Rx','Manifest']},
+                {n:'UI/Events',t:['Layouts','Constraint','Widgets','Event Handling','Intents','Toasts']},
+                {n:'Storage',t:['SharedPrefs','SQLite','CRUD','Firebase']},
+                {n:'Trends',t:['Kotlin','Flutter/React','APIs','Publishing']}
+            ]},
+            DMW: { name: 'Data Mining', color: '#bd00ff', units: [
+                {n:'Fundamentals',t:['KDD Process','Applications','Data/Info/Know']},
+                {n:'Warehousing',t:['DW Concepts','OLTP vs OLAP','Data Marts']},
+                {n:'Techniques',t:['Classification','Decision Tree','Naive Bayes','K-Means','Apriori']},
+                {n:'Design',t:['Star/Snowflake','Fact/Dim Tables','ETL','OLAP Ops']},
+                {n:'Tools',t:['Orange/RapidMiner','Case Studies','Future Scope']}
+            ]},
+            ES: { name: 'Entrepreneurship', color: '#ff7700', units: [
+                {n:'Intro',t:['Traits','Types','Intrapreneur','Structures','Startup India']},
+                {n:'Ideas',t:['Discovery','Business Plan','Market Research','4Ps']},
+                {n:'Mgmt',t:['Leadership','Resources','Production','HR']},
+                {n:'Support',t:['Institutions','PAN/GST','Incubators','Models']},
+                {n:'Exit',t:['CSR','Ethics','Export-Import','Exit Strategies']}
+            ]}
+        };
+
+        // PRACTICALS (Definitive List)
+        const PRACTICALS = {
+            CDF: [
+                'Prepare detailed case study analysis report on the Browsers and networks for accessing the Dark Web, its relationship to the broader internet, and its role as an enabler for malicious activities.',
+                'Demonstrate intrusion detection system (ids) using any Open Source tool.',
+                'Prepare detailed case study analysis report and interpret the email header to trace the source of the email, identify security risks, and verify authenticity using email header analyzer tools',
+                'Prepare a Python module to analyze the strength of a given password.',
+                'Prepare detailed case study analysis report on data hiding and invisible signature using Open Source Steganography tool.',
+                'Write the python code to Create malicious script for generating multiple folders for ethical hacking.',
+                'Prepare detailed study report on Open-source intelligence (OSINT) framework and perform Information gathering using Username, Email address, Domain name and IP address.',
+                'Prepare detailed case study analysis report on recent types of cybercrimes.',
+                'Prepare a Python module to extract and display hidden EXIF metadata from images.',
+                'Perform basic commands in Kali Linux and Port scanning using NMAP.',
+                'Perform web Artifact analysis using Autopsy. (https://www.sleuthkit.org/autopsy/)',
+                'Identification and Analysis of Software Vulnerabilities using CVE and MITRE Database Detection & Threat Mapping using the MITRE ATT&CK® Framework.'
+            ],
+            DMW: [
+                'Study of KDD (Knowledge Discovery in Databases) process with examples.',
+                'Identify and discuss real-life applications of data mining (group discussion / mini case study).',
+                'Study of Data Warehousing concepts through case studies/examples.',
+                'Compare OLTP and OLAP databases using simple SQL queries.',
+                'Perform Classification using Decision Tree in data mining tools.',
+                'Perform Classification using Naive Bayes in data mining tools.',
+                'Apply Clustering using K-Means in data mining tools.',
+                'Apply Association Rule Mining using Apriori algorithm in data mining tools.',
+                'Simple project: Apply two techniques (Classification + Clustering) on a sample dataset and compare results.',
+                'Design a simple Star Schema for a sales database.',
+                'Design a Snowflake Schema for a student performance database.',
+                'Perform basic OLAP operations (Roll-up, Drill-down, Slice, Dice) using sample data in SQL.',
+                'Introduction and hands-on with Data Mining Tool',
+                'Perform a case study analysis (e.g., Market Basket, Student Result Analysis, or Healthcare data).',
+                'Mini Project: Apply OLAP + one data mining technique on a dataset and present findings.'
+            ],
+            ES: [
+                "Prepare a collage for 'Traits of successful entrepreneurs'.",
+                "Take Interview of at least four entrepreneurs and identify common traits.",
+                "Mock Business Model – design USP, brand name, logo, and advertisement.",
+                "Develop your own website to share strengths and weaknesses.",
+                "Visit industrial exhibitions, trade fairs and prepare reports.",
+                "Present your Dream Start-up story as a seminar.",
+                "Analyze two products from Shark Tank program.",
+                "Develop two products from household waste (attach photographs)",
+                "Choose any product/advertisement and analyze its good and bad points/cost sheet/supply chain etc.",
+                "Compare schemes for entrepreneurship promotion of any bank.",
+                "Organize industrial visit and suggest modifications for process improvement. Conduct a market survey before visiting.",
+                "Select a social cause, set objectives, plan and work for its accomplishment."
+            ],
+            FML: [
+                "Numerical Computing with Python (NumPy, Matplotlib). Perform various operation mentioned in unit 6.",
+                "Introduction to Pandas for data import and export (Excel, CSV etc.). Perform various operations.",
+                "Basic Introduction to Scikit learn. Perform various operations corresponding to Scikit-learn.",
+                "Intro to ML - Predicting Favorite Fruit. Generate rule through python code (Age/Gender -> Fruit).",
+                "Handle and preprocess Student.csv: Load, Explore, Handle missing, Encode, Feature Selection.",
+                "Celebrity Guessing Game: Build confusion matrix and calculate performance metrics (Accuracy, Kappa, etc).",
+                "Write a program to use a K-nearest neighbor to predict class labels of test data.",
+                "ML Project (music.csv): Predict genre using SVM and calculate accuracy.",
+                "Import vgsales.csv: Find rows/cols, describe, and apply logistic regression for house price (vgsales logic mismatch in syllabus?).",
+                "Project on regression (home_data.csv): Plot price vs area, apply linear regression, evaluate metrics.",
+                "Write a program to cluster a set of points using K-means."
+            ],
+            MAD: [
+                'Install Android Studio, configure SDK, and create a simple "Hello World" application.',
+                'Develop a simple app that demonstrates the activity lifecycle',
+                'Design a static user interface using Linear Layout and Relative Layout.',
+                'Design a user interface using Constraint Layout and Grid Layout',
+                'Develop a simple calculator app that takes user input and performs basic arithmetic operations.',
+                'Develop an Android application that uses an Intent to pass data between different activities.',
+                'Develop an Android application that uses Implicit intent to open the dialer with a given phone number.',
+                'Develop an Android application to change screen color as per the user choice from a menu.',
+                'Develop an Android application that uses Content Providers to share data between different apps and components.',
+                'Develop an Android application that stores and retrieves username using shared preferences.',
+                'Develop an Android application that creates a database using SQLiteOpenHelper Class and performs Insert and Read.',
+                'Develop an Android application to Update and Delete data from the SQLite database using SQLite Open Helper class.',
+                'Develop an Android application that integrates Firebase real-time database and store the data into it.',
+                'Develop an Android application to retrieve data from Firebase Realtime Database or a JSON data source (REST API).'
+            ],
+            MCN: [
+                'Explore the process of creating and verifying a client-server network',
+                'Explore the process of creating and verifying a peer to peer network.',
+                'Getting Started with Wireshark: Installation and Setup',
+                'Introduction to TCP Packet Analysis with Wireshark',
+                'IPv4 Validity and Class Identification problems (1.0.4.5, 80.54.256.14, etc.)',
+                'Subnet mask calculation for specified hosts (Class C case study)',
+                'Class C IP (192.192.192) subnetting case study: network ID, host ID, system range.',
+                'Determine valid IPv6 addresses and correct invalid ones.',
+                'Study wireless ad-hoc network and show its working in windows operating system.',
+                'Study IP packet delivery in Mobile IP.',
+                'Study Agent discovery and agent registration in Mobile IP.',
+                'Study Bluetooth protocol stack.'
+            ]
+        };
+
+        const CRITICAL = ['OSI Model','TCP/IP','IPv4 Subnet','Mobile IP','Packet Delivery','CIA Triad','Malware','OSI Attacks','Kali Linux','Autopsy/Sleuth','Types of ML','Feature Selection','Training types','KNN','SVM','K-Means','Activity Lifecycle','Constraint','Intents','SQLite','CRUD','KDD Process','OLTP vs OLAP','Decision Tree','Star Schema','Business Plan','4Ps'];
+
+        let state = JSON.parse(localStorage.getItem('sys_state_v1')) || { done: {}, expanded: {}, streak: 0, last: null };
+        let timer = null, seconds = 0;
+
+        function save() {
+            localStorage.setItem('sys_state_v1', JSON.stringify(state));
+            updateHUD();
+        }
+
+        function toggle(id) {
+            state.done[id] = !state.done[id];
+            
+            // Streak Logic
+            const today = new Date().toDateString();
+            if (state.last !== today) {
+                const yest = new Date(); yest.setDate(yest.getDate() - 1);
+                state.streak = (state.last === yest.toDateString()) ? state.streak + 1 : 1;
+                state.last = today;
+            }
+            save();
+            render(); 
+        }
+
+        function toggleGroup(uid) {
+            state.expanded[uid] = !state.expanded[uid];
+            render();
+        }
+
+        function getTopicId(s, u, t) { return `${s}_${u}_${t}`; }
+
+        function render() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            
+            let totalT = 0, doneT = 0, critL = 0;
+
+            Object.entries(SUBJECTS).forEach(([code, sub]) => {
+                let subTotal = 0, subDone = 0;
+                
+                let html = `<div class="subject-module">
+                    <div class="module-header">
+                        <div class="module-info">
+                            <h3>${sub.name}</h3>
+                            <span class="code" style="color:${sub.color}; background:${sub.color}20">${code}</span>
+                        </div>
+                        <div class="progress-dial">
+                            <svg width="36" height="36">
+                                <circle class="bg" cx="18" cy="18" r="14" />
+                                <circle class="fg" cx="18" cy="18" r="14" stroke="${sub.color}" id="dial-${code}" stroke-dasharray="88" stroke-dashoffset="88"/>
+                            </svg>
+                            <span class="progress-text" id="pct-${code}">0%</span>
+                        </div>
+                    </div>
+                    <div class="module-body">`;
+
+                sub.units.forEach((unit, uIdx) => {
+                    const uid = `${code}_${uIdx}`;
+                    const isExp = state.expanded[uid];
+                    
+                    let uHtml = `<div class="unit-group ${isExp ? 'expanded' : ''}">
+                        <div class="unit-header" onclick="toggleGroup('${uid}')">
+                            <span>UNIT ${uIdx+1}: ${unit.n.toUpperCase()}</span>
+                            <span>[${isExp ? '-' : '+'}]</span>
+                        </div>
+                        <div class="topic-list">`;
+                        
+                    unit.t.forEach((topic, tIdx) => {
+                        const tid = getTopicId(code, uIdx, tIdx);
+                        const isDone = state.done[tid];
+                        const isCrit = CRITICAL.some(c => topic.includes(c));
+                        
+                        subTotal++; totalT++;
+                        if (isDone) { subDone++; doneT++; }
+                        if (isCrit && !isDone) critL++;
+
+                        uHtml += `<div class="topic-item ${isDone ? 'done' : ''}">
+                            <div class="cyber-check" onclick="toggle('${tid}')"></div>
+                            <span class="topic-name" onclick="toggle('${tid}')">${topic}</span>
+                            ${isCrit ? '<div class="critical-badge"></div>' : ''}
+                            <button class="focus-trigger" onclick="startFocus('${topic}')">FOCUS</button>
+                        </div>`;
+                    });
+                    
+                    uHtml += `</div></div>`;
+                    html += uHtml;
+                });
+
+                // Practicals Section
+                const pracs = PRACTICALS[code] || [];
+                if (pracs.length > 0) {
+                    const pracUid = `${code}_PRAC`;
+                    const isPracExp = state.expanded[pracUid];
+                    const pracDone = pracs.filter((_, i) => state.done[`${code}_P_${i}`]).length;
+                    
+                    html += `<div class="unit-group ${isPracExp ? 'expanded' : ''}" style="border-top: 1px solid #333;">
+                        <div class="unit-header" onclick="toggleGroup('${pracUid}')" style="color: #ff9500;">
+                            <span>🔬 PRACTICALS (${pracDone}/${pracs.length})</span>
+                            <span>[${isPracExp ? '-' : '+'}]</span>
+                        </div>
+                        <div class="topic-list">`;
+                    
+                    pracs.forEach((prac, pIdx) => {
+                        const pid = `${code}_P_${pIdx}`;
+                        const isDone = state.done[pid];
+                        subTotal++; totalT++;
+                        if (isDone) { subDone++; doneT++; }
+                        
+                        html += `<div class="topic-item ${isDone ? 'done' : ''}">
+                            <div class="cyber-check" onclick="toggle('${pid}')"></div>
+                            <span class="topic-name" onclick="toggle('${pid}')">${pIdx + 1}. ${prac}</span>
+                            <button class="focus-trigger" onclick="startFocus('${prac.replace(/'/g, "\\'")}')">FOCUS</button>
+                        </div>`;
+                    });
+                    
+                    html += `</div></div>`;
+                }
+
+                html += `</div></div>`;
+                grid.innerHTML += html;
+
+                setTimeout(() => {
+                    const pct = subTotal ? Math.round((subDone/subTotal)*100) : 0;
+                    const offset = 88 - (88 * pct / 100);
+                    const el = document.getElementById(`dial-${code}`);
+                    if(el) el.style.strokeDashoffset = offset;
+                    const txt = document.getElementById(`pct-${code}`);
+                    if(txt) txt.textContent = pct;
+                }, 50);
+            });
+
+            // HUD Updates
+            document.getElementById('total-pct').textContent = totalT ? Math.round((doneT/totalT)*100) + '%' : '0%';
+            document.getElementById('main-bar').style.width = totalT ? ((doneT/totalT)*100) + '%' : '0%';
+            document.getElementById('done-count').textContent = `${doneT}/${totalT}`;
+            document.getElementById('critical-left').textContent = critL;
+            document.getElementById('streak').textContent = `${state.streak} DAY${state.streak===1?'':'S'}`;
+            
+            const days = Math.ceil((new Date('2026-03-30') - new Date()) / (1000 * 60 * 60 * 24));
+            document.getElementById('days-left').textContent = Math.max(0, days);
+        }
+
+        // Timer Logic
+        function startFocus(topic) {
+            document.getElementById('focus-target').textContent = `>> ${topic.toUpperCase()}`;
+            resetTimer();
+            toggleTimer();
+        }
+
+        function toggleTimer() {
+            const btn = document.getElementById('timer-btn');
+            const disp = document.getElementById('timer');
+            
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+                btn.textContent = 'RESUME';
+                btn.classList.remove('active');
+                disp.classList.remove('active');
+            } else {
+                timer = setInterval(() => {
+                    seconds++;
+                    const h = Math.floor(seconds / 3600).toString().padStart(2,'0');
+                    const m = Math.floor((seconds % 3600) / 60).toString().padStart(2,'0');
+                    const s = (seconds % 60).toString().padStart(2,'0');
+                    disp.textContent = `${h}:${m}:${s}`;
+                }, 1000);
+                btn.textContent = 'PAUSE';
+                btn.classList.add('active');
+                disp.classList.add('active');
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timer);
+            timer = null;
+            seconds = 0;
+            document.getElementById('timer').textContent = '00:00:00';
+            document.getElementById('timer-btn').textContent = 'INIT';
+            document.getElementById('timer-btn').classList.remove('active');
+            document.getElementById('timer').classList.remove('active');
+            document.getElementById('focus-target').textContent = 'IDLE';
+        }
+
+        // Utils
+        function exportData() {
+            const blob = new Blob([JSON.stringify(state)], {type: 'application/json'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `S4_BACKUP_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+        }
+
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.onchange = e => {
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    state = JSON.parse(ev.target.result);
+                    save(); render();
+                };
+                reader.readAsText(e.target.files[0]);
+            };
+            input.click();
+        }
+
+        function updateHUD() { } // Placeholder
+
+        render();
+    </script>
+</body>
+</html>
