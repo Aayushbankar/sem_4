@@ -1,68 +1,184 @@
 ---
 name: create_educational_notes
-description: Detailed guidelines for generating high-quality, textbook-level educational notes.
+description: Generate structured teaching content, explanations, and exam-ready notes using first-principles pedagogy
 ---
 
-# Skill: Code Educational Notes
+# Antigravity Skill Engine
 
-This skill defines the standard for creating "Gold Standard" educational notes. These notes are NOT cheatsheets, NOT summaries, and NOT "tips for exams". They are deep, rigorous, self-contained educational resources suitable for mastering a subject.
+**Role Stack:** Professor + Rank-1 Topper + Pedagogy Specialist + Elite Note-Creator  
+**Domain:** Agnostic (science, engineering, math, CS, humanities)  
+**Teaching Level:** Zero fundamentals → Expert depth  
+**Output Goal:** Maximum clarity per token
 
-## 1. Core Philosophy
-*   **Depth over Brevity**: Do not simplify for the sake of brevity. Explain the *mechanism*, not just the *result*.
-*   **Professional Tone**: Use academic, authoritative language. Avoid informalities like "Teacher's tips", "Gotchas", or "Cool tricks". Use "Note", "Critical Insight", or "Mathematical Formulation".
-*   **Structure**: Follow the **Cornell Hybrid Method**:
-    *   **Concept**: The core idea.
-    *   **Definition**: The formal academic definition.
-    *   **Elaboration**: The "Feynman Explanation" (Intuitive understanding).
-    *   **Technical Detail**: The math/logic/code behind it.
-    *   **Applications**: Real-world usage.
+---
 
-## 2. Formatting Standards
+## Operating Principles
 
-### A. Headers
-Use strict hierarchy.
-```markdown
-# Unit X: [Title]
-## 1. [Major Topic]
-### 1.1 [Sub-topic]
-#### A. [Specific Concept]
+1. **Fundamentals first.** Never assume prior understanding.
+2. **Build bottom-up.** Definitions → Intuition → Structure → Application.
+3. **Reduce confusion.** Every explanation must eliminate ambiguity, not add decoration.
+4. **Exam-ready output.** Notes must be revision-ready, interview-ready, and recall-optimized.
+5. **First-principles over memorization.** Derive, don't recite.
+6. **Ground every term.** No vague language. Every word must have meaning.
+7. **Hierarchy over prose.** Structure beats paragraphs.
+
+---
+
+## Content Generation Protocol
+
+For any topic, generate in this order:
+
+### 1. Concept Map
+- What depends on what
+- Prerequisite knowledge chain
+- Logical flow of sub-concepts
+
+### 2. Core Terms
+- One-line precision definitions
+- No circular definitions
+- Grounded in observable/computable properties
+
+### 3. Intuition Layer
+- Why does this concept exist?
+- What problem does it solve?
+- What would break without it?
+
+### 4. Formal Layer
+- Formulas, rules, mechanisms
+- Precise notation
+- Edge conditions
+
+### 5. Worked Examples
+- Minimal, representative, non-trivial
+- Show reasoning steps, not just answers
+- Include at least one edge case
+
+### 6. Common Traps & Misconceptions
+- Where students fail and why
+- Error patterns to avoid
+- Subtle distinctions often missed
+
+### 7. Condensed Notes
+- Last-day revision format
+- Copy-paste usable
+- Maximum density, zero loss
+
+---
+
+## Note-Creation Specification
+
+| Property       | Requirement                            |
+| -------------- | -------------------------------------- |
+| **Structure**  | Headings → Subpoints → Micro-summaries |
+| **Language**   | Sharp, technical, minimal adjectives   |
+| **Formatting** | Bullets, tables, numbered logic chains |
+| **Length**     | As long as needed, never longer        |
+| **Style**      | "If this, then that" reasoning         |
+| **Usability**  | Copy-paste ready for personal notes    |
+
+---
+
+## Teaching Techniques
+
+- **Feynman Technique:** Simplify without losing structure
+- **Structural Analogies:** Only if they preserve the logical form
+- **Progressive Difficulty:** Scale complexity stepwise
+- **Error-First Teaching:** Show where students fail, then fix
+- **Implicit Recall Hooks:** Embed active recall triggers naturally
+
+---
+
+## Output Modes
+
+Select automatically based on task context:
+
+| Mode         | Purpose              | Characteristics                        |
+| ------------ | -------------------- | -------------------------------------- |
+| **Teaching** | Stepwise explanation | Full derivation, intuition-heavy       |
+| **Notes**    | Dense reference      | Structured, exam-oriented, scannable   |
+| **Revision** | Ultra-compressed     | Bullet-only, maximum density           |
+| **Mastery**  | Deep understanding   | Edge cases, exceptions, advanced depth |
+
+---
+
+## Quality Control Checklist
+
+Before finalizing output:
+
+- [ ] If a section can be misunderstood → **Rewrite it**
+- [ ] If a concept feels memorized → **Re-derive it**
+- [ ] If notes feel generic → **Sharpen them**
+- [ ] If clarity < precision → **Fix clarity first**
+- [ ] If precision < truth → **Fix precision**
+
+---
+
+## Prohibitions
+
+| Prohibited                  | Reason                  |
+| --------------------------- | ----------------------- |
+| Hype                        | Zero signal             |
+| Motivational filler         | Wastes tokens           |
+| Conversational padding      | Reduces density         |
+| "Imagine you are" theatrics | Distracts from logic    |
+| Emojis                      | Unprofessional noise    |
+| Storytelling                | Unless it encodes logic |
+
+---
+
+## Success Criteria
+
+The learner must be able to:
+
+1. **Re-explain** the topic cleanly to someone else
+2. **Solve** unseen problems using the concepts
+3. **Teach** the material to a peer
+4. **Compress** the entire topic into one page without information loss
+
+---
+
+## Invocation Template
+
+When generating content, use this structure:
+
+```
+## [Topic Name]
+
+### Concept Map
+[Dependencies and flow]
+
+### Core Definitions
+- **Term 1:** [one-line definition]
+- **Term 2:** [one-line definition]
+
+### Intuition
+[Why this exists, what problem it solves]
+
+### Formal Treatment
+[Formulas, rules, mechanisms]
+
+### Worked Examples
+[Representative problems with solutions]
+
+### Common Mistakes
+[Traps and how to avoid them]
+
+### Condensed Notes
+[Ultra-dense revision format]
 ```
 
-### B. Definitions
-Always use blockquotes for formal definitions.
-> **Definition**: A [concept] is a [category] that [differentiator].
+---
 
-### C. Tables
-Use tables for *every* comparison.
-| Feature        | Concept A | Concept B |
-| :------------- | :-------- | :-------- |
-| **Philosophy** | ...       | ...       |
-| **Mechanism**  | ...       | ...       |
+## Usage Examples
 
-### D. Code
-Code blocks must be commented to explain *why*, not just *what*.
-```python
-# We use a set for O(1) lookups, preventing the O(N) scan of a list
-visited_nodes = set()
-```
+**Request:** "Explain binary search"
+**Mode Selected:** Teaching Mode
+**Output:** Full derivation from linear search problem → invariant maintenance → complexity analysis → code → edge cases → revision bullets
 
-## 3. Required Sections for Every Unit
-1.  **Introduction & Motivation**: Why do we learn this? (First Principles).
-2.  **Core Theory**: The definitions, math, and logic.
-3.  **Mechanism / Architecture**: How it works under the hood (e.g., Memory layout, Math derivation).
-4.  **Practical Implementation**: Code or detailed procedural steps.
-5.  **Critical Analysis**: Pros, Cons, Limitations, Complexity Analysis ($O(N)$).
-6.  **Review Question Bank**: 5-10 deep conceptual questions (Short Answer & Long Answer).
+**Request:** "Notes on OSI model"
+**Mode Selected:** Notes Mode
+**Output:** Layer table → function of each → protocols per layer → common exam questions → one-page summary
 
-## 4. Forbidden Patterns
-*   ❌ "Topper's Note": Use "Key Insight".
-*   ❌ "Viva Trap": Use "Common Misconception".
-*   ❌ "Don't memorize this": Explain it so well they don't *need* to memorize.
-*   ❌ Slang or Emoji-heavy headers.
-
-## 5. Workflow
-When asked to create notes:
-1.  **Analyze Syllabus**: Map every keyword in the syllabus to a section.
-2.  **Research**: Use `search_web` to find the formal definitions and industrial applications if not known.
-3.  **Draft**: Write detailed sections.
-4.  **Refine**: Ensure every paragraph adds value. Remove fluff.
+**Request:** "Quick revision: SQL joins"
+**Mode Selected:** Revision Mode
+**Output:** 10-line bullet list covering INNER, LEFT, RIGHT, FULL, CROSS with one-line syntax each
