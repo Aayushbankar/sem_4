@@ -1,21 +1,34 @@
-"""
-Practical 4: ML Introduction - Predicting Favorite Fruit
-Unit: I | Hours: 2
+selector = ""
 
-Objectives:
-- Understand how machines "learn" from examples (similar to human learning)
-- Explore a simple dataset and predict outcomes based on input features
-- Write Python code that takes age group and gender as input
-- Provide favorite fruit as output
-- Generate prediction rules through Python code
+gender = int(input("enter your gender  \n 1 for male  \n 2 for female \n your input : "))
 
-Dataset:
-| Age Group | Gender | Favorite Fruit |
-|-----------|--------|----------------|
-| 10-15     | Male   | Apple          |
-| 10-15     | Female | Banana         |
-| 16-20     | Male   | Orange         |
-| 16-20     | Female | Mango          |
-| 21-25     | Male   | Banana         |
-| 21-25     | Female | Mango          |
-"""
+if gender not in [1,2]:
+    print("you entered wrong number retry ")
+else:
+    if gender == 1 :
+        gender = "m" 
+        selector += gender
+    elif gender == 2 :
+        gender = "f"
+        selector += gender
+
+age = int(input("enter your age :"))
+if age >= 10 and age <= 15 :
+    selector += "1"
+if age >= 16 and age <= 20 :
+    selector += "2"
+if age >= 21 and age <= 25 :
+    selector += "3"
+
+
+group = {
+    "m1" : "apple",
+    "f1" : "banana",
+    "m2" : "orange",
+    "f2":"mango ",
+    "m3": "banana",
+    "f3" : "mango"
+}
+
+
+print(f"your favourite fruit might be : {group[selector]}")
