@@ -4,6 +4,7 @@ gender = int(input("enter your gender  \n 1 for male  \n 2 for female \n your in
 
 if gender not in [1,2]:
     print("you entered wrong number retry ")
+    # break
 else:
     if gender == 1 :
         gender = "m" 
@@ -19,15 +20,20 @@ if age >= 16 and age <= 20 :
     selector += "2"
 if age >= 21 and age <= 25 :
     selector += "3"
+else:
+    # print("age out of the data set limit")
+    selector  = ""
+    selector = "no"
 
 
 group = {
     "m1" : "apple",
     "f1" : "banana",
     "m2" : "orange",
-    "f2":"mango ",
+    "f2":"mango",
     "m3": "banana",
-    "f3" : "mango"
+    "f3" : "mango",
+    "no" : "age out of dataset range"
 }
 
 
