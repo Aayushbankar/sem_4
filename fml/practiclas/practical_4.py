@@ -1,31 +1,25 @@
+#!/usr/bin/env python3
+import sys
 selector = ""
-
-gender = int(input("enter your gender  \n 1 for male  \n 2 for female \n your input : "))
-
+gender = int(input("\nSelect Gender:\n  1. Male\n  2. Female\n\nYour Input: "))
 if gender not in [1,2]:
     print("you entered wrong number retry ")
-    # break
+    sys.exit()
 else:
     if gender == 1 :
-        gender = "m" 
-        selector += gender
+        selector += "m"
     elif gender == 2 :
-        gender = "f"
-        selector += gender
-
-age = int(input("enter your age :"))
+        selector += "f"
+age = int(input("\nenter your age :"))
 if age >= 10 and age <= 15 :
     selector += "1"
-if age >= 16 and age <= 20 :
+elif age >= 16 and age <= 20 :
     selector += "2"
-if age >= 21 and age <= 25 :
+elif age >= 21 and age <= 25 :
     selector += "3"
 else:
-    # print("age out of the data set limit")
-    selector  = ""
-    selector = "no"
-
-
+    print("\nSorry you age is out of our current dataset range")
+    sys.exit()
 group = {
     "m1" : "apple",
     "f1" : "banana",
@@ -33,8 +27,7 @@ group = {
     "f2":"mango",
     "m3": "banana",
     "f3" : "mango",
-    "no" : "age out of dataset range"
 }
+print(f"\nYour favorite fruit might be: {group[selector]}")
 
 
-print(f"your favourite fruit might be : {group[selector]}")
