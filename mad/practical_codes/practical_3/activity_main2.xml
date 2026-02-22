@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity2">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="50dp"
+        android:layout_marginBottom="35dp"
+        android:text="what would you wnat to greet ?" />
+
+    <Button
+        android:id="@+id/btnMorning"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:layout_margin="12dp"
+        android:layout_gravity="center"
+        android:text="say good-morning" />
+
+    <Button
+        android:id="@+id/btnAfternoon"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:layout_margin="12dp"
+        android:layout_gravity="center"
+        android:text="say good afternnon" />
+    <Button
+        android:id="@+id/btnEvening"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:layout_margin="12dp"
+        android:layout_gravity="center"
+        android:text="say good evening" />
+
+    <Button
+        android:id="@+id/btnNight"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:layout_margin="12dp"
+        android:text="say good night " />
+
+    <Button
+        android:id="@+id/btnBack"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:layout_margin="12dp"
+        android:text="back to home screen" />
+
+</LinearLayout>
